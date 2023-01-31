@@ -1,3 +1,7 @@
+import 'package:bullseye/game_model.dart';
+import 'package:bullseye/prompt.dart';
+import 'package:bullseye/score.dart';
+import 'package:bullseye/slider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -18,6 +22,15 @@ class GamePage extends StatefulWidget {
 }
 
 class _GamePageState extends State<GamePage> {
+  bool _alertIsVisible = false;
+  late GameModel gameModel;
+
+  @override
+  void initState() {
+    super.initState();
+    gameModel = GameModel(50);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,27 +38,46 @@ class _GamePageState extends State<GamePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text(
-              'Hello Bullseye',
-              style:
-                  TextStyle(fontWeight: FontWeight.bold, color: Colors.green),
+            const Prompt(targetValue: 100),
+            Control(
+              gameModel: gameModel,
             ),
             TextButton(
-              onPressed: printHello,
+              onPressed: () {
+                _alertIsVisible = true;
+                _showAlert(context);
+              },
               child: const Text(
                 'Hit me!',
                 style: TextStyle(color: Colors.blue),
               ),
             ),
+            Score(totalScore: gameModel.totalScore, round: gameModel.round),
           ],
         ),
       ),
     );
   }
 
-  void printHello() {
-    if (kDebugMode) {
-      print("Hello");
-    }
+  void _showAlert(BuildContext buildContext) {
+    var onButton = TextButton(
+        onPressed: () {
+          Navigator.of(buildContext).pop();
+          _alertIsVisible = false;
+          print('Awesome presses! $_alertIsVisible');
+        },
+        child: const Text("Awesome!!"));
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Hello There"),
+          content: Text('Current Score ${gameModel.current}'),
+          actions: [onButton],
+          elevation: 5,
+        );
+      },
+    );
   }
 }
