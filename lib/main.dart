@@ -1,9 +1,11 @@
 import 'dart:math';
 
 import 'package:bullseye/game_model.dart';
+import 'package:bullseye/hitme_button.dart';
 import 'package:bullseye/prompt.dart';
 import 'package:bullseye/score.dart';
-import 'package:bullseye/slider.dart';
+import 'package:bullseye/control.dart';
+import 'package:bullseye/styled_button.dart';
 import 'package:flutter/material.dart';
 
 void main(List<String> args) {
@@ -34,13 +36,13 @@ class _GamePageState extends State<GamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: 
-          Row(
+      body: Row(
         children: [
           SafeArea(
             child: NavigationRail(
               extended: false,
               // ignore: prefer_const_literals_to_create_immutables
+              backgroundColor: Colors.indigo,
               destinations: [
                 const NavigationRailDestination(
                   icon: Icon(Icons.home),
@@ -48,7 +50,7 @@ class _GamePageState extends State<GamePage> {
                 ),
                 const NavigationRailDestination(
                   icon: Icon(Icons.history_sharp),
-                  label: Text('Favorites'),
+                  label: Text('History'),
                 ),
               ],
               selectedIndex: 0,
@@ -59,34 +61,50 @@ class _GamePageState extends State<GamePage> {
           ),
           Expanded(
             child: Container(
+              decoration: const BoxDecoration(
+                  color: Colors.white,
+                  image: DecorationImage(
+                      image: AssetImage('images/background.png'),
+                      fit: BoxFit.cover)),
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Prompt(targetValue: gameModel.target),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 48.0, bottom: 32.0),
+                      child: Prompt(targetValue: gameModel.target),
+                    ),
                     Control(
                       gameModel: gameModel,
                     ),
-                    TextButton(
-                      onPressed: () {
-                        _showAlert(context);
-                      },
-                      child: const Text(
-                        'Hit me!',
-                        style: TextStyle(color: Colors.blue),
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: TextButton(
+                        onPressed: () {
+                          _showAlert(context);
+                        },
+                        child: HintMeButton(
+                          text: 'HIT ME',
+                          onPressed: () {
+                            _showAlert(context);
+                          },
+                        ),
                       ),
                     ),
-                    Score(
-                      totalScore: gameModel.totalScore,
-                      round: gameModel.round,
-                      onStartOver: () {
-                        setState(() {
-                          gameModel.totalScore = GameModel.scoreStart;
-                          gameModel.round = GameModel.roundStart;
-                          gameModel.current = GameModel.sliderStart;
-                          gameModel.target = _newTargetValue();
-                        });
-                      },
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Score(
+                        totalScore: gameModel.totalScore,
+                        round: gameModel.round,
+                        onStartOver: () {
+                          setState(() {
+                            gameModel.totalScore = GameModel.scoreStart;
+                            gameModel.round = GameModel.roundStart;
+                            gameModel.current = GameModel.sliderStart;
+                            gameModel.target = _newTargetValue();
+                          });
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -113,7 +131,8 @@ class _GamePageState extends State<GamePage> {
   int _newTargetValue() => Random().nextInt(100) + 1;
 
   void _showAlert(BuildContext buildContext) {
-    var onButton = TextButton(
+    var onButton = StyledButton(
+        icon: Icons.close,
         onPressed: () {
           Navigator.of(buildContext).pop();
           setState(() {
@@ -121,8 +140,7 @@ class _GamePageState extends State<GamePage> {
             gameModel.target = _newTargetValue();
             gameModel.round += 1;
           });
-        },
-        child: const Text("Awesome!!"));
+        });
 
     showDialog(
       context: context,
