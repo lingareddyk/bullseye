@@ -1,42 +1,47 @@
 import 'package:flutter/material.dart';
 
 class Score extends StatelessWidget {
-  const Score({Key? key, required this.totalScore, required this.round}) 
-  : super(key: key);
+  const Score(
+      {Key? key,
+      required this.totalScore,
+      required this.round,
+      required this.onStartOver})
+      : super(key: key);
 
   final int totalScore;
   final int round;
+  final VoidCallback onStartOver;
 
   @override
   Widget build(BuildContext context) {
-    return  Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                TextButton(onPressed: () {
-                  
-                }, child: const Text("Start Over!!")),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      const Text('Score: '),
-                      const Text('99999'),
-                    ],
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                      const Text('Round: '),
-                      const Text('999'),
-                    ],
-                  ),
-                ),
-                TextButton(onPressed: () {
-                  
-                }, child: const Text('Info')),
-              ],
-            );
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        TextButton(
+            onPressed: () {
+              onStartOver();
+            },
+            child: const Text("Start Over!!")),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              const Text('Score: '),
+              Text('$totalScore'),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              const Text('Round: '),
+              Text('$round'),
+            ],
+          ),
+        ),
+        TextButton(onPressed: () {}, child: const Text('Info')),
+      ],
+    );
   }
 }

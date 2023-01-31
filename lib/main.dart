@@ -1,8 +1,9 @@
+import 'dart:math';
+
 import 'package:bullseye/game_model.dart';
 import 'package:bullseye/prompt.dart';
 import 'package:bullseye/score.dart';
 import 'package:bullseye/slider.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 void main(List<String> args) {
@@ -22,49 +23,104 @@ class GamePage extends StatefulWidget {
 }
 
 class _GamePageState extends State<GamePage> {
-  bool _alertIsVisible = false;
   late GameModel gameModel;
 
   @override
   void initState() {
     super.initState();
-    gameModel = GameModel(50);
+    gameModel = GameModel(_newTargetValue());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Prompt(targetValue: 100),
-            Control(
-              gameModel: gameModel,
-            ),
-            TextButton(
-              onPressed: () {
-                _alertIsVisible = true;
-                _showAlert(context);
+      body: 
+          Row(
+        children: [
+          SafeArea(
+            child: NavigationRail(
+              extended: false,
+              // ignore: prefer_const_literals_to_create_immutables
+              destinations: [
+                const NavigationRailDestination(
+                  icon: Icon(Icons.home),
+                  label: Text('Home'),
+                ),
+                const NavigationRailDestination(
+                  icon: Icon(Icons.history_sharp),
+                  label: Text('Favorites'),
+                ),
+              ],
+              selectedIndex: 0,
+              onDestinationSelected: (value) {
+                print('selected: $value');
               },
-              child: const Text(
-                'Hit me!',
-                style: TextStyle(color: Colors.blue),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Prompt(targetValue: gameModel.target),
+                    Control(
+                      gameModel: gameModel,
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        _showAlert(context);
+                      },
+                      child: const Text(
+                        'Hit me!',
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                    ),
+                    Score(
+                      totalScore: gameModel.totalScore,
+                      round: gameModel.round,
+                      onStartOver: () {
+                        setState(() {
+                          gameModel.totalScore = GameModel.scoreStart;
+                          gameModel.round = GameModel.roundStart;
+                          gameModel.current = GameModel.sliderStart;
+                          gameModel.target = _newTargetValue();
+                        });
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-            Score(totalScore: gameModel.totalScore, round: gameModel.round),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
+
+  int _pointsForCurrentRound() {
+    const maxScore = 100;
+    var targetMissedBy = gameModel.target - gameModel.current;
+    var pointsForCurrentRound = maxScore - (targetMissedBy.abs());
+    if (pointsForCurrentRound == 100) {
+      pointsForCurrentRound += 100;
+    } else if (pointsForCurrentRound == 99) {
+      pointsForCurrentRound += 50;
+    }
+    return pointsForCurrentRound;
+  }
+
+  int _newTargetValue() => Random().nextInt(100) + 1;
 
   void _showAlert(BuildContext buildContext) {
     var onButton = TextButton(
         onPressed: () {
           Navigator.of(buildContext).pop();
-          _alertIsVisible = false;
-          print('Awesome presses! $_alertIsVisible');
+          setState(() {
+            gameModel.totalScore += _pointsForCurrentRound();
+            gameModel.target = _newTargetValue();
+            gameModel.round += 1;
+          });
         },
         child: const Text("Awesome!!"));
 
@@ -73,7 +129,8 @@ class _GamePageState extends State<GamePage> {
       builder: (context) {
         return AlertDialog(
           title: const Text("Hello There"),
-          content: Text('Current Score ${gameModel.current}'),
+          content: Text(
+              'The silder"s value is ${gameModel.current}. You scored ${_pointsForCurrentRound()}'),
           actions: [onButton],
           elevation: 5,
         );
