@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:bullseye/game_history_data.dart';
+import 'package:bullseye/game_score_data.dart';
 import 'package:bullseye/prompt.dart';
 import 'package:bullseye/score.dart';
 import 'package:bullseye/styled_button.dart';
@@ -11,7 +13,6 @@ import 'hitme_button.dart';
 
 class GameViewWidget extends StatefulWidget {
   const GameViewWidget({super.key});
-  
 
   @override
   State<GameViewWidget> createState() => _GameViewWidgetState();
@@ -20,9 +21,8 @@ class GameViewWidget extends StatefulWidget {
 int _newTargetValue() => Random().nextInt(100) + 1;
 
 class _GameViewWidgetState extends State<GameViewWidget> {
-
   late GameModel gameModel;
-    @override
+  @override
   void initState() {
     super.initState();
     gameModel = GameModel(_newTargetValue());
@@ -47,10 +47,11 @@ class _GameViewWidgetState extends State<GameViewWidget> {
               gameModel: gameModel,
             ),
             Padding(
-              padding: const EdgeInsets.only(top:32.0),
+              padding: const EdgeInsets.only(top: 32.0),
               child: HintMeButton(
                 text: 'HIT ME',
                 onPressed: () {
+                  _saveGameScoreData(gameModel);
                   _showAlert(context);
                 },
               ),
@@ -77,7 +78,7 @@ class _GameViewWidgetState extends State<GameViewWidget> {
     ;
   }
 
-    void _showAlert(BuildContext buildContext) {
+  void _showAlert(BuildContext buildContext) {
     var onButton = StyledButton(
         icon: Icons.close,
         onPressed: () {
@@ -103,7 +104,7 @@ class _GameViewWidgetState extends State<GameViewWidget> {
     );
   }
 
-    int _pointsForCurrentRound() {
+  int _pointsForCurrentRound() {
     const maxScore = 100;
     var targetMissedBy = gameModel.target - gameModel.current;
     var pointsForCurrentRound = maxScore - (targetMissedBy.abs());
@@ -113,5 +114,18 @@ class _GameViewWidgetState extends State<GameViewWidget> {
       pointsForCurrentRound += 50;
     }
     return pointsForCurrentRound;
+  }
+
+  void _saveGameScoreData(GameModel gameModel) {
+    
+    /* GameScore gameScore =
+        const GameScore(gameId: 1, noOfRounds: 1, gameScore: 200);
+    GameScoreData gameScoreData = GameScoreData(gameScores: [gameScore]);
+    var toJson = gameScoreData.toJson();
+    print(toJson);
+
+    print('------------------------------');
+    var gameScoreDataFromJson = GameScoreData.fromJson(toJson);
+    print(gameScoreDataFromJson); */
   }
 }

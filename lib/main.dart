@@ -30,11 +30,6 @@ class _GamePageState extends State<GamePage> {
   int selectedRailDestination = 0;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     Widget page;
     switch (selectedRailDestination) {
@@ -69,7 +64,6 @@ class _GamePageState extends State<GamePage> {
               ],
               selectedIndex: selectedRailDestination,
               onDestinationSelected: (value) {
-                print('selected: $value');
                 setState(() {
                   selectedRailDestination = value;
                 });
