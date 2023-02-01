@@ -1,6 +1,8 @@
 import 'dart:math';
 
+import 'package:bullseye/HistoryWidget.dart';
 import 'package:bullseye/game_model.dart';
+import 'package:bullseye/gameview.dart';
 import 'package:bullseye/hitme_button.dart';
 import 'package:bullseye/prompt.dart';
 import 'package:bullseye/score.dart';
@@ -25,24 +27,36 @@ class GamePage extends StatefulWidget {
 }
 
 class _GamePageState extends State<GamePage> {
-  late GameModel gameModel;
+  int selectedRailDestination = 0;
 
   @override
   void initState() {
     super.initState();
-    gameModel = GameModel(_newTargetValue());
   }
 
   @override
   Widget build(BuildContext context) {
+    Widget page;
+    switch (selectedRailDestination) {
+      case 0:
+        page = const GameViewWidget();
+        break;
+      case 1:
+        page = const GameHistoryWidget();
+        break;
+      default:
+        throw UnimplementedError('no widget for $selectedRailDestination');
+    }
+
     return Scaffold(
       body: Row(
         children: [
           SafeArea(
             child: NavigationRail(
-              extended: false,
+              extended: true,
               // ignore: prefer_const_literals_to_create_immutables
-              backgroundColor: Colors.indigo,
+              backgroundColor: Colors.grey,
+              // ignore: prefer_const_literals_to_create_immutables
               destinations: [
                 const NavigationRailDestination(
                   icon: Icon(Icons.home),
@@ -53,106 +67,19 @@ class _GamePageState extends State<GamePage> {
                   label: Text('History'),
                 ),
               ],
-              selectedIndex: 0,
+              selectedIndex: selectedRailDestination,
               onDestinationSelected: (value) {
                 print('selected: $value');
+                setState(() {
+                  selectedRailDestination = value;
+                });
               },
             ),
           ),
-          Expanded(
-            child: Container(
-              decoration: const BoxDecoration(
-                  color: Colors.white,
-                  image: DecorationImage(
-                      image: AssetImage('images/background.png'),
-                      fit: BoxFit.cover)),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 48.0, bottom: 32.0),
-                      child: Prompt(targetValue: gameModel.target),
-                    ),
-                    Control(
-                      gameModel: gameModel,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: TextButton(
-                        onPressed: () {
-                          _showAlert(context);
-                        },
-                        child: HintMeButton(
-                          text: 'HIT ME',
-                          onPressed: () {
-                            _showAlert(context);
-                          },
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(20.0),
-                      child: Score(
-                        totalScore: gameModel.totalScore,
-                        round: gameModel.round,
-                        onStartOver: () {
-                          setState(() {
-                            gameModel.totalScore = GameModel.scoreStart;
-                            gameModel.round = GameModel.roundStart;
-                            gameModel.current = GameModel.sliderStart;
-                            gameModel.target = _newTargetValue();
-                          });
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+          const VerticalDivider(thickness: 1, width: 1),
+          Expanded(child: page),
         ],
       ),
-    );
-  }
-
-  int _pointsForCurrentRound() {
-    const maxScore = 100;
-    var targetMissedBy = gameModel.target - gameModel.current;
-    var pointsForCurrentRound = maxScore - (targetMissedBy.abs());
-    if (pointsForCurrentRound == 100) {
-      pointsForCurrentRound += 100;
-    } else if (pointsForCurrentRound == 99) {
-      pointsForCurrentRound += 50;
-    }
-    return pointsForCurrentRound;
-  }
-
-  int _newTargetValue() => Random().nextInt(100) + 1;
-
-  void _showAlert(BuildContext buildContext) {
-    var onButton = StyledButton(
-        icon: Icons.close,
-        onPressed: () {
-          Navigator.of(buildContext).pop();
-          setState(() {
-            gameModel.totalScore += _pointsForCurrentRound();
-            gameModel.target = _newTargetValue();
-            gameModel.round += 1;
-          });
-        });
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Hello There"),
-          content: Text(
-              'The silder"s value is ${gameModel.current}. You scored ${_pointsForCurrentRound()}'),
-          actions: [onButton],
-          elevation: 5,
-        );
-      },
     );
   }
 }
